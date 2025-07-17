@@ -137,7 +137,7 @@ class DatabaseSeeder extends Seeder
         BidangStudiUser::insert([
             ['user_id' => $guru->id, 'bidang_studi_id' => $lainnya->id],
         ]);
-
+        
         $guru = User::updateOrCreate(
             ['username' => '199802S004'],
             [
