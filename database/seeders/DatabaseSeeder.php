@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('biologi123'),
                 'role' => 'biologi',
             ]
-        );
+        ); 
 
         User::updateOrCreate(
             ['username' => 'kimia123'],

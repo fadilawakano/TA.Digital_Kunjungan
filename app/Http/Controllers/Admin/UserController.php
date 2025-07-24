@@ -14,6 +14,7 @@ class UserController extends Controller
 {
     $query = User::query();
 
+    // Pencarian
     if ($request->has('search') && $request->search != '') {
         $query->where(function ($q) use ($request) {
             $q->where('name', 'like', '%' . $request->search . '%')
@@ -21,9 +22,30 @@ class UserController extends Controller
         });
     }
 
-    $users = $query->latest()->paginate(8)->withQueryString(); // Menyimpan query search saat paginate
-    return view('admin.users.index', compact('users'));
+    // Filter berdasarkan role
+    if ($request->filled('role')) {
+        $query->where('role', $request->role);
+    }
+
+    // Filter kelas jika role murid
+    if ($request->role === 'murid' && $request->filled('kelas')) {
+        $query->where('kelas', $request->kelas);
+    }
+
+    $users = $query->latest()->paginate(8)->withQueryString();
+
+    // Ambil semua kelas dari murid (tidak dari hasil paginasi)
+    $kelasList = User::where('role', 'murid')
+                    ->whereNotNull('kelas')
+                    ->select('kelas')
+                    ->distinct()
+                    ->orderBy('kelas')
+                    ->pluck('kelas');
+
+    return view('admin.users.index', compact('users', 'kelasList'));
 }
+
+
 
     public function create()
     {

@@ -14,6 +14,6 @@ class Kerusakan extends Model
         'kelas',
         'kategori',
         'deskripsi',
-        'status', // 'belum dikonfirmasi', 'sudah diperbaiki'
+        'status', 
     ];
 }

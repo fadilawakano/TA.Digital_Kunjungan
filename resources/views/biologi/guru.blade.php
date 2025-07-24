@@ -20,7 +20,7 @@
      }">
 
     <div class="container mx-auto px-4 py-6">
-        <h1 class="text-2xl font-bold mb-6">Data Kunjungan Murid ke Lab Biologi</h1>
+        <h1 class="text-2xl font-bold mb-6">Data Kunjungan Guru ke Lab Biologi</h1>
 
         {{-- Filter & Tombol Cetak --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
@@ -72,7 +72,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($kunjunganGuru as $data)
+                @forelse ($data as $item)
                     <tr class="border-t hover:bg-[#f7e8d3]">
                         <td class="px-4 py-2">{{ $data->user->name ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $data->kelas }}</td>
@@ -125,18 +125,18 @@
                 @endforelse
             </tbody>
         </table>
-        @if ($kunjunganGuru->hasPages())
+        @if ($data->hasPages())
     <div class="mt-6 flex flex-wrap justify-center gap-2 text-sm">
         {{-- Previous Page Link --}}
-        @if ($kunjunganGuru->onFirstPage())
+        @if ($data->onFirstPage())
             <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed">←</span>
         @else
-            <a href="{{ $kunjunganGuru->previousPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">←</a>
+            <a href="{{ $data->previousPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">←</a>
         @endif
 
         {{-- Pagination Elements --}}
-        @foreach ($kunjunganGuru->getUrlRange(1, $kunjunganGuru->lastPage()) as $page => $url)
-            @if ($page == $kunjunganGuru->currentPage())
+        @foreach ($data->getUrlRange(1, $data->lastPage()) as $page => $url)
+            @if ($page == $data->currentPage())
                 <span class="px-3 py-1 bg-[#7EACB5] text-white rounded font-semibold">{{ $page }}</span>
             @else
                 <a href="{{ $url }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">{{ $page }}</a>
@@ -144,8 +144,8 @@
         @endforeach
 
         {{-- Next Page Link --}}
-        @if ($kunjunganGuru->hasMorePages())
-            <a href="{{ $kunjunganGuru->nextPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">→</a>
+        @if ($data->hasMorePages())
+            <a href="{{ $data->nextPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">→</a>
         @else
             <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed">→</span>
         @endif

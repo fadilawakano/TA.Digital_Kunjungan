@@ -19,64 +19,55 @@ class BiologiController extends Controller
     }
 
 
-    public function murid()
-    {
-        $kunjunganBiologi = Kunjungan::where('role_tujuan', 'biologi')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'murid');
-            })
-            ->latest()
-            ->paginate(5) 
-            ->withQueryString(); 
+   public function murid()
+{
+    $data = Kunjungan::where('role_tujuan', 'biologi')
+        ->whereHas('user', fn($q) => $q->where('role', 'murid'))
+        ->latest()
+        ->paginate(5)
+        ->withQueryString();
 
-        return view('biologi.murid', compact('kunjunganBiologi'));
-    }
+    return view('biologi.murid', compact('data'));
+}
+
 
     public function guru()
-    {
-        $kunjunganGuru = Kunjungan::where('role_tujuan', 'biologi')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'guru');
-            })
-            ->latest()
-           ->paginate(5) 
-            ->withQueryString(); 
+{
+    $data = Kunjungan::where('role_tujuan', 'biologi')
+        ->whereHas('user', fn($q) => $q->where('role', 'guru'))
+        ->latest()
+        ->paginate(5)
+        ->withQueryString();
 
-        return view('biologi.guru', compact('kunjunganGuru'));
-    }
+    return view('biologi.guru', compact('data'));
+}
+
 
     public function filter(Request $request, $asal)
-    {
-        $jenisFilter = $request->input('filter_jenis', 'harian');
+{
+    $query = Kunjungan::with('user')
+        ->where('role_tujuan', 'biologi');
 
-        $query = Kunjungan::with('user')
-            ->where('role_tujuan', 'biologi');
-
-        if ($asal === 'murid') {
-            $query->whereHas('user', fn($q) => $q->where('role', 'murid'));
-        } elseif ($asal === 'guru') {
-            $query->whereHas('user', fn($q) => $q->where('role', 'guru'));
-        }
-
-
-        $this->applyDateFilter($query, $request);
-
-        $data = $query->latest()->get();
-
-        if ($asal === 'murid') {
-            return view('biologi.murid', ['kunjunganBiologi' => $data]);
-        } elseif ($asal === 'guru') {
-            return view('biologi.guru', ['kunjunganGuru' => $data]);
-        } else {
-            $murid = $data->where('user.role', 'murid');
-            $guru = $data->where('user.role', 'guru');
-
-            return view('biologi.dashboard', [
-                'kunjunganMurid' => $murid,
-                'kunjunganGuru' => $guru,
-            ]);
-        }
+    if ($asal === 'murid') {
+        $query->whereHas('user', fn($q) => $q->where('role', 'murid'));
+    } elseif ($asal === 'guru') {
+        $query->whereHas('user', fn($q) => $q->where('role', 'guru'));
     }
+
+    $this->applyDateFilter($query, $request);
+
+    $data = $query->latest()->paginate(5)->withQueryString();
+
+    if (in_array($asal, ['murid', 'guru'])) {
+        return view("biologi.$asal", compact('data'));
+    }
+
+    $murid = $data->where('user.role', 'murid');
+    $guru = $data->where('user.role', 'guru');
+
+    return view('biologi.dashboard', compact('murid', 'guru'));
+}
+
 
             private function applyDateFilter($query, $request)
         {

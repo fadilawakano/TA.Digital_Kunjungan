@@ -30,6 +30,44 @@
     </form>
 </div>
 
+{{-- Tabs Filter Role --}}
+<div class="mt-4 mb-2">
+    <div class="flex flex-wrap gap-2 text-sm font-medium">
+        @php
+            $activeRole = request('role');
+        @endphp
+
+        @foreach ([
+            '' => 'Semua',
+            'murid' => 'Murid',
+            'guru' => 'Guru',
+            'perpustakaan' => 'Petugas Perpustakaan',
+            'biologi' => 'Petugas Biologi',
+            'fisika' => 'Petugas Fisika',
+            'kimia' => 'Petugas Kimia',
+            'admin' => 'Admin'
+        ] as $role => $label)
+            <a href="{{ route('admin.users.index', array_merge(request()->except('page'), ['role' => $role ?: null])) }}"
+               class="px-4 py-2 rounded-lg shadow transition
+                    {{ $activeRole === $role ? 'bg-[#7EACB5] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+    </div>
+</div>
+
+{{-- Filter Kelas untuk Murid --}}
+@if(request('role') === 'murid')
+    <div class="flex flex-wrap gap-2 my-4">
+        @foreach ($kelasList as $kelas)
+            <a href="{{ route('admin.users.index', ['role' => 'murid', 'kelas' => $kelas]) }}"
+               class="px-3 py-1 rounded {{ request('kelas') === $kelas ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }}">
+                {{ $kelas }}
+            </a>
+        @endforeach
+    </div>
+@endif
+
 
     @if(session('success'))
         <div class="bg-green-100 text-green-700 p-2 mt-4 rounded">{{ session('success') }}</div>
