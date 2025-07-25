@@ -74,22 +74,22 @@
             <tbody>
                 @forelse ($data as $item)
                     <tr class="border-t hover:bg-[#f7e8d3]">
-                        <td class="px-4 py-2">{{ $data->user->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $data->kelas }}</td>
-                        <td class="px-4 py-2">{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
-                        <td class="px-4 py-2">{{ $data->mata_pelajaran }}</td>
-                        <td class="px-4 py-2">{{ $data->alat }}</td>
-                        <td class="px-4 py-2">{{ $data->jumlah_alat }}</td>
+                        <td class="px-4 py-2">{{ $item->user->name ?? '-' }}</td>
+                        <td class="px-4 py-2">{{ $item->kelas }}</td>
+                        <td class="px-4 py-2">{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
+                        <td class="px-4 py-2">{{ $item->mata_pelajaran }}</td>
+                        <td class="px-4 py-2">{{ $item->alat }}</td>
+                        <td class="px-4 py-2">{{ $item->jumlah_alat }}</td>
                         <td class="px-4 py-2 break-words whitespace-normal max-w-[120px] align-top">
-                            {{ $data->judul_materi }}
+                            {{ $item->judul_materi }}
                         </td>
                         <td class="px-4 py-2 break-words whitespace-normal max-w-[150px] align-top">
-                            @if ($data->status_verifikasi === 'terverifikasi')
+                            @if ($item->status_verifikasi === 'terverifikasi')
                                 <span class="text-green-600 font-semibold">Terverifikasi</span><br>
-                                <small class="text-gray-500">oleh {{ $data->verifikasi_petugas }}</small>
+                                <small class="text-gray-500">oleh {{ $item->verifikasi_petugas }}</small>
                             @else
                                 <div class="flex flex-col gap-2">
-                                    <form action="{{ route('biologi.verifikasi', $data->id) }}" method="POST">
+                                    <form action="{{ route('biologi.verifikasi', $item->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="status" value="berhasil">
                                         <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 w-full">
@@ -97,7 +97,7 @@
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('biologi.verifikasi', $data->id) }}" method="POST">
+                                    <form action="{{ route('biologi.verifikasi', $item->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="status" value="kerusakan">
                                         <button type="submit" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 w-full">
@@ -109,7 +109,7 @@
                         </td>
 
                         <td class="px-4 py-2">
-                            <form action="{{ route('biologi.kunjungan.destroy', $data->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                            <form action="{{ route('biologi.kunjungan.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
