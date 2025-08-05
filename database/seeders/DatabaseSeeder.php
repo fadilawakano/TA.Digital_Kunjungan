@@ -427,11 +427,11 @@ $muridXIIF2 = [
     ['name' => 'Ulil Zubran Patty', 'username' => '00861G00684'],
     ['name' => 'Usma Ul Hasna Patty', 'username' => '00739G26994'],
     ['name' => 'Fifin Astiani Tupamahu', 'username' => '00835G15677'],
-    ['name' => 'Yasser Abutalib Pattimura', 'username' => '00757G66510'],
+    ['name' => 'Yasser Abutalib Pattimura', 'username' => '00757G66510'], 
     ['name' => 'Refa', 'username' => '00622G55616'],
 ];
 
-foreach ($muridXIIF2 as $murid) {
+foreach ($muridXIIF2 as $murid) {     
     User::updateOrCreate(
         ['username' => $murid['username']],
         [

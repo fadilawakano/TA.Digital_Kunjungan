@@ -20,6 +20,12 @@
                 <p class="text-gray-600 text-sm">Please enter your details</p>
             </div>
 
+            @if (session('success'))
+                <div class="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
@@ -52,6 +58,12 @@
 
                 <button type="submit"
                     class="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition">Log In</button>
+                    <!-- Link Lupa Password -->
+                    <div class="mt-4 text-center">
+                        <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:underline">
+                            Lupa Password?
+                        </a>
+                    </div>
             </form>
         </div>
     </div>

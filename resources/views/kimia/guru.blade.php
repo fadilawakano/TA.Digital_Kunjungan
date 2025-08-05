@@ -21,7 +21,7 @@
      }">
 
     <div class="container mx-auto px-4 py-6">
-        <h1 class="text-2xl font-bold mb-6">Data Kunjungan Murid ke Lab kimia</h1>
+        <h1 class="text-2xl font-bold mb-6">Data Kunjungan Guru ke Lab kimia</h1>
 
         {{-- Filter & Tombol Cetak --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
