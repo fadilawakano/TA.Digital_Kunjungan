@@ -86,15 +86,20 @@ function updateField(periode) {
             </select>
         </div>
 
-        <div x-data="{ lokasi: '{{ request('lokasi') }}' }" x-init="$watch('lokasi', value => tipeShow = (value === 'perpustakaan'))" x-effect="tipeShow = (lokasi === 'perpustakaan')">
-            <label class="block text-sm text-[#0c0a07] mb-1">Tipe (khusus Perpustakaan)</label>
-            <select name="tipe" x-show="lokasi === 'perpustakaan'"
-                    class="w-full border border-[#E4DCCF] bg-[#FFF8F1] rounded px-3 py-2 text-[#0f0b08]">
-                <option value="">-- Semua Tipe --</option>
-                <option value="baca" {{ request('tipe') == 'baca' ? 'selected' : '' }}>Baca</option>
-                <option value="pinjam" {{ request('tipe') == 'pinjam' ? 'selected' : '' }}>Pinjam</option>
-            </select>
-        </div>
+        @if($tab === 'murid')
+    <div x-data="{ lokasi: '{{ request('lokasi') }}' }"
+         x-init="$watch('lokasi', value => tipeShow = (value === 'perpustakaan'))"
+         x-effect="tipeShow = (lokasi === 'perpustakaan')">
+        <label class="block text-sm text-[#0c0a07] mb-1">Tipe (khusus Perpustakaan)</label>
+        <select name="tipe" x-show="lokasi === 'perpustakaan'"
+                class="w-full border border-[#E4DCCF] bg-[#FFF8F1] rounded px-3 py-2 text-[#0f0b08]">
+            <option value="">-- Semua Tipe --</option>
+            <option value="baca" {{ request('tipe') == 'baca' ? 'selected' : '' }}>Baca</option>
+            <option value="pinjam" {{ request('tipe') == 'pinjam' ? 'selected' : '' }}>Pinjam</option>
+        </select>
+    </div>
+@endif
+
 
         <div>
             <label class="block text-sm text-[#0c0a07] mb-1">Status</label>

@@ -120,10 +120,9 @@ if ($request->filled('tanggal')) {
         $query->where('lokasi', $request->lokasi);
     }
 
-    // Filter tipe (khusus perpustakaan)
-    if ($request->lokasi === 'perpustakaan' && $request->filled('tipe')) {
-        $query->where('tipe', $request->tipe);
-    }
+    if ($request->lokasi === 'perpustakaan' && $tab === 'murid' && $request->filled('tipe')) {
+    $query->where('tipe', $request->tipe);
+}
 
     // Filter status
     if ($request->filled('status')) {

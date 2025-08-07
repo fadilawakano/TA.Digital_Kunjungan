@@ -16,7 +16,10 @@
 
     @if($lokasi === 'perpustakaan')
         <h3>
-            Laporan Kunjungan Perpustakaan - {{ ucfirst($tipe ?? 'Semua') }}
+            Laporan Kunjungan Perpustakaan 
+            @if($tab === 'murid')
+                - {{ ucfirst($tipe ?? 'Semua') }}
+            @endif
         </h3>
 
         <table>
@@ -30,19 +33,25 @@
                     <th>Judul Buku</th>
                     <th>Jumlah Buku</th>
                     <th>Tanggal</th>
-                    @if($tipe === 'pinjam' || !$tipe)
-                        <th>Tipe</th>
-                    @endif
-                    @if($tipe === 'pinjam')
+
+                    {{-- Guru: selalu ada kolom Tanggal Pengembalian --}}
+                    {{-- Murid: hanya kalau tipe pinjam --}}
+                    @if($tab === 'guru' || $tipe === 'pinjam')
                         <th>Tanggal Pengembalian</th>
                     @endif
+
+                    {{-- Murid tanpa filter tipe: tetap tampil kolom tipe --}}
+                    @if($tab === 'murid' && !$tipe)
+                        <th>Tipe</th>
+                    @endif
+
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 @php
                     $data = $kunjungan;
-                    if ($tipe) {
+                    if ($tab === 'murid' && $tipe) {
                         $data = $kunjungan->where('tipe', $tipe);
                     }
                 @endphp
@@ -57,18 +66,31 @@
                         <td>{{ $k->judul_buku }}</td>
                         <td>{{ $k->jumlah_buku }}</td>
                         <td>{{ $k->tanggal }}</td>
-                        @if($tipe === 'pinjam' || !$tipe)
-                            <td>{{ ucfirst($k->tipe) }}</td>
-                        @endif
-                        @if($tipe === 'pinjam')
+
+                        @if($tab === 'guru' || $tipe === 'pinjam')
                             <td>{{ $k->tanggal_pengembalian }}</td>
                         @endif
+
+                        @if($tab === 'murid' && !$tipe)
+                            <td>{{ ucfirst($k->tipe) }}</td>
+                        @endif
+
                         <td>{{ $k->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $tipe === 'pinjam' ? ($tab === 'murid' ? 8 : 7) : ($tab === 'murid' ? 7 : 6) }}">
-                            Tidak ada data kunjungan {{ $tipe ?? '' }} perpustakaan.
+                        <td colspan="
+                            @if($tab === 'guru')
+                                8
+                            @elseif($tab === 'murid' && $tipe === 'pinjam')
+                                8
+                            @elseif($tab === 'murid' && !$tipe)
+                                8
+                            @else
+                                7
+                            @endif
+                        ">
+                            Tidak ada data kunjungan perpustakaan.
                         </td>
                     </tr>
                 @endforelse
