@@ -122,5 +122,25 @@
             </button>
         </div>
     </form>
+
+<script>
+    document.getElementById('form-kunjungan').addEventListener('submit', function(e) {
+        const waktuMulai = new Date(document.getElementById('waktu_mulai').value);
+        const waktuSelesai = new Date(document.getElementById('waktu_selesai').value);
+        const now = new Date();
+
+        if (waktuMulai < now || waktuSelesai < now) {
+            e.preventDefault();
+            alert("Tanggal dan waktu kunjungan sudah lewat. Silakan pilih waktu di masa depan.");
+            return;
+        }
+
+        if (waktuSelesai <= waktuMulai) {
+            e.preventDefault();
+            alert("Waktu selesai harus lebih dari waktu mulai.");
+        }
+    });
+</script>
+
 </div>
 @endsection

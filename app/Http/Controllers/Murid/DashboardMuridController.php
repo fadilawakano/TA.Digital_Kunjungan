@@ -16,8 +16,9 @@ class DashboardMuridController extends Controller
             'biologi' => $this->jadwalTersedia('biologi'),
             'fisika' => $this->jadwalTersedia('fisika'),
             'kimia' => $this->jadwalTersedia('kimia'),
-            'perpustakaan' => true, // Tidak perlu jadwal
+            'perpustakaan' => null, // Tetap null karena tidak ada jadwal
         ];
+
 
         return view('murid.dashboard', compact('jadwal'));
     }
@@ -68,7 +69,7 @@ class DashboardMuridController extends Controller
             ->with('error', 'Anda tidak dapat melakukan kunjungan ke ' . ucfirst($lokasi) . ' karena masih ada laporan kerusakan yang belum dikonfirmasi.');
     }
 
-    if (in_array($lokasi, ['biologi', 'fisika', 'kimia']) && !$this->jadwalTersedia($lokasi)) {
+    if (in_array($lokasi, ['biologi', 'fisika', 'kimia']) && $this->jadwalTersedia($lokasi) === null) {
         return redirect()->route('murid.dashboard')
             ->with('error', 'Tidak ada jadwal kunjungan tersedia untuk ' . strtoupper($lokasi));
     }
@@ -90,13 +91,16 @@ class DashboardMuridController extends Controller
         return view('murid.status-kunjungan', compact('kunjungan'));
     }
 
-    private function jadwalTersedia(string $lokasi): bool
-    {
-        return Kunjungan::where([
-            ['tipe', 'jadwal'],
-            ['lokasi', $lokasi],
-            ['kelas', Auth::user()->kelas],
-            ['tanggal', now()->toDateString()],
-        ])->exists();
-    }
+    private function jadwalTersedia(string $lokasi): ?Kunjungan
+{
+    return Kunjungan::where([
+        ['tipe', 'jadwal'],
+        ['lokasi', $lokasi],
+        ['kelas', Auth::user()->kelas],
+    ])
+    ->whereDate('tanggal', '>=', now()->toDateString())
+    ->orderBy('tanggal')
+    ->first();
+}
+
 }

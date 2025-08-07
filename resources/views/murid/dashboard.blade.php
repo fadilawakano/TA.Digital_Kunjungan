@@ -29,29 +29,65 @@
         @endphp
 
         @foreach ($locations as $loc)
-            @if ($jadwal[$loc['key']])
-                <a href="{{ $loc['route'] }}"
-                   class="cursor-pointer {{ $loc['bg'] }} text-gray-800 rounded-3xl p-6 shadow-2xl hover:scale-105 transition-transform duration-200 ease-in-out block border border-white/30">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
-                            <p class="text-sm mt-1 text-gray-600">Klik untuk daftar</p>
-                        </div>
-                        <div class="text-4xl">{{ $loc['icon'] }}</div>
-                    </div>
-                </a>
-            @else
-                <div class="bg-gray-200 text-gray-500 rounded-3xl p-6 shadow-inner border border-gray-300 cursor-not-allowed">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
-                            <p class="text-sm mt-1">Tidak tersedia untuk kelas Anda hari ini</p>
-                        </div>
-                        <div class="text-4xl opacity-40">{{ $loc['icon'] }}</div>
-                    </div>
+    @php
+        $jadwalKunjungan = is_object($jadwal[$loc['key']]) ? $jadwal[$loc['key']] : null;
+        $now = \Carbon\Carbon::now();
+        $waktuMulai = $jadwalKunjungan?->waktu_mulai ? \Carbon\Carbon::parse($jadwalKunjungan->waktu_mulai) : null;
+    @endphp
+
+    {{-- PERPUSTAKAAN (tidak tergantung jadwal) --}}
+    @if ($loc['key'] === 'perpustakaan')
+        <a href="{{ $loc['route'] }}"
+           class="cursor-pointer {{ $loc['bg'] }} text-gray-800 rounded-3xl p-6 shadow-2xl hover:scale-105 transition-transform duration-200 ease-in-out block border border-white/30">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
+                    <p class="text-sm mt-1 text-gray-600">Klik untuk daftar</p>
                 </div>
-            @endif
-        @endforeach
+                <div class="text-4xl">{{ $loc['icon'] }}</div>
+            </div>
+        </a>
+
+    {{-- LAB (biologi, fisika, kimia) --}}
+    @elseif ($jadwalKunjungan)
+        @if ($waktuMulai && $waktuMulai->isFuture())
+            {{-- Jadwal ada, tapi belum dimulai --}}
+            <div class="bg-yellow-100 text-yellow-800 rounded-3xl p-6 shadow-inner border border-yellow-300 cursor-not-allowed">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
+                        <p class="text-sm mt-1">Kunjungan akan dibuka pada {{ $waktuMulai->translatedFormat('l, d F Y H:i') }}</p>
+                    </div>
+                    <div class="text-4xl opacity-60">{{ $loc['icon'] }}</div>
+                </div>
+            </div>
+        @else
+            {{-- Jadwal ada dan sudah aktif --}}
+            <a href="{{ $loc['route'] }}"
+               class="cursor-pointer {{ $loc['bg'] }} text-gray-800 rounded-3xl p-6 shadow-2xl hover:scale-105 transition-transform duration-200 ease-in-out block border border-white/30">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
+                        <p class="text-sm mt-1 text-gray-600">Klik untuk daftar</p>
+                    </div>
+                    <div class="text-4xl">{{ $loc['icon'] }}</div>
+                </div>
+            </a>
+        @endif
+
+    {{-- Tidak ada jadwal untuk lab --}}
+    @else
+        <div class="bg-gray-200 text-gray-500 rounded-3xl p-6 shadow-inner border border-gray-300 cursor-not-allowed">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">{{ $loc['label'] }}</h2>
+                    <p class="text-sm mt-1">Tidak tersedia untuk kelas Anda hari ini</p>
+                </div>
+                <div class="text-4xl opacity-40">{{ $loc['icon'] }}</div>
+            </div>
+        </div>
+    @endif
+@endforeach
     </div>
 </div>
 @endsection

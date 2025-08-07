@@ -26,6 +26,12 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm text-center">
+                    Username atau password salah.
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
