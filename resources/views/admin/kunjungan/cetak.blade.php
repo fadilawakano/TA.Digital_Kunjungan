@@ -15,88 +15,65 @@
     <h2>Laporan Kunjungan {{ ucfirst($tab) }}</h2>
 
     @if($lokasi === 'perpustakaan')
-        {{-- TABEL BACA --}}
-        @php $kunjunganBaca = $kunjungan->where('tipe', 'baca'); @endphp
-        @if($kunjunganBaca->count())
-            <h3>Buku Kunjungan Perpustakaan</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        @if($tab === 'murid')
-                            <th>Kelas</th>
-                        @endif
-                        <th>Judul Buku</th>
-                        <th>Jumlah Buku</th>
-                        <th>Tanggal</th>
-                        <th>Tipe</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($kunjunganBaca as $index => $k)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $k->user->name }}</td>
-                            @if($tab === 'murid')
-                                <td>{{ $k->kelas }}</td>
-                            @endif
-                            <td>{{ $k->judul_buku }}</td>
-                            <td>{{ $k->jumlah_buku }}</td>
-                            <td>{{ $k->tanggal }}</td>
-                            <td>Baca</td>
-                            <td>{{ $k->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
+        <h3>
+            Laporan Kunjungan Perpustakaan - {{ ucfirst($tipe ?? 'Semua') }}
+        </h3>
 
-        {{-- TABEL PINJAM --}}
-        @php $kunjunganPinjam = $kunjungan->where('tipe', 'pinjam'); @endphp
-        @if($kunjunganPinjam->count())
-            <h3 style="margin-top: 40px;">Buku Peminjaman Perpustakaan</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        @if($tab === 'murid')
-                            <th>Kelas</th>
-                        @endif
-                        <th>Judul Buku</th>
-                        <th>Jumlah Buku</th>
-                        <th>Tanggal</th>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    @if($tab === 'murid')
+                        <th>Kelas</th>
+                    @endif
+                    <th>Judul Buku</th>
+                    <th>Jumlah Buku</th>
+                    <th>Tanggal</th>
+                    @if($tipe === 'pinjam' || !$tipe)
                         <th>Tipe</th>
+                    @endif
+                    @if($tipe === 'pinjam')
                         <th>Tanggal Pengembalian</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($kunjunganPinjam as $index => $k)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $k->user->name }}</td>
-                            @if($tab === 'murid')
-                                <td>{{ $k->kelas }}</td>
-                            @endif
-                            <td>{{ $k->judul_buku }}</td>
-                            <td>{{ $k->jumlah_buku }}</td>
-                            <td>{{ $k->tanggal }}</td>
-                            <td>Pinjam</td>
+                    @endif
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $data = $kunjungan;
+                    if ($tipe) {
+                        $data = $kunjungan->where('tipe', $tipe);
+                    }
+                @endphp
+
+                @forelse($data as $index => $k)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $k->user->name }}</td>
+                        @if($tab === 'murid')
+                            <td>{{ $k->kelas }}</td>
+                        @endif
+                        <td>{{ $k->judul_buku }}</td>
+                        <td>{{ $k->jumlah_buku }}</td>
+                        <td>{{ $k->tanggal }}</td>
+                        @if($tipe === 'pinjam' || !$tipe)
+                            <td>{{ ucfirst($k->tipe) }}</td>
+                        @endif
+                        @if($tipe === 'pinjam')
                             <td>{{ $k->tanggal_pengembalian }}</td>
-                            <td>{{ $k->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
-
-        @if($kunjunganBaca->count() === 0 && $kunjunganPinjam->count() === 0)
-            <p style="text-align:center; margin-top: 40px;">Tidak ada data kunjungan perpustakaan.</p>
-        @endif
-
+                        @endif
+                        <td>{{ $k->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ $tipe === 'pinjam' ? ($tab === 'murid' ? 8 : 7) : ($tab === 'murid' ? 7 : 6) }}">
+                            Tidak ada data kunjungan {{ $tipe ?? '' }} perpustakaan.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     @else
         {{-- TABEL LAB --}}
         <table>
@@ -109,6 +86,10 @@
                     @endif
                     <th>Mata Pelajaran</th>
                     <th>Judul Materi</th>
+                    @if($tab === 'guru')
+                        <th>Alat</th>
+                        <th>Jumlah Alat</th>
+                    @endif
                     <th>Tanggal</th>
                     <th>Status</th>
                 </tr>
@@ -123,11 +104,19 @@
                         @endif
                         <td>{{ $k->mata_pelajaran }}</td>
                         <td>{{ $k->judul_materi }}</td>
+                        @if($tab === 'guru')
+                            <td>{{ $k->alat }}</td>
+                            <td>{{ $k->jumlah_alat }}</td>
+                        @endif
                         <td>{{ $k->tanggal }}</td>
                         <td>{{ $k->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="7">Tidak ada data kunjungan laboratorium.</td></tr>
+                    <tr>
+                        <td colspan="{{ $tab === 'guru' ? 8 : 7 }}">
+                            Tidak ada data kunjungan laboratorium.
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>

@@ -55,7 +55,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $item->user->name }}</td>
-                    <td>{{ $item->user->kelas }}</td>
+                    <td>{{ $item->kelas }}</td>
                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $item->mata_pelajaran ?? '-' }}</td>
                     <td>{{ $item->alat ?? '-' }}</td>

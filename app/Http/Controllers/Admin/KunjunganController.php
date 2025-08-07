@@ -79,70 +79,71 @@ if ($request->filled('tanggal')) {
     }
 
     public function cetak(Request $request)
-    {
-        $tab = $request->get('tab', 'murid');
-        $lokasi = $request->get('lokasi'); // ← ambil lokasi untuk blade
+{
+    $tab = $request->get('tab', 'murid');
+    $lokasi = $request->get('lokasi');
+    $tipe   = $request->get('tipe'); // baca atau pinjam
 
-        $query = Kunjungan::query();
+    $query = Kunjungan::query();
 
-        if ($tab === 'murid') {
-            $query->whereHas('user', fn($q) => $q->where('role', 'murid'));
-        } elseif ($tab === 'guru') {
-            $query->whereHas('user', fn($q) => $q->where('role', 'guru'));
-        }
-
-        // Filter tanggal berdasarkan periode
-if ($request->filled('tanggal')) {
-    $tanggalInput = $request->tanggal;
-    $periode = $request->periode ?? 'harian';
-
-    try {
-        if ($periode === 'mingguan') {
-            // Format "2025-W23"
-            [$year, $week] = explode('-W', $tanggalInput);
-            $start = \Carbon\Carbon::now()->setISODate($year, $week)->startOfWeek();
-            $end = \Carbon\Carbon::now()->setISODate($year, $week)->endOfWeek();
-            $query->whereBetween('tanggal', [$start, $end]);
-
-        } elseif ($periode === 'bulanan') {
-            // Format "2025-06"
-            $date = \Carbon\Carbon::parse($tanggalInput . '-01');
-            $query->whereYear('tanggal', $date->year)
-                  ->whereMonth('tanggal', $date->month);
-
-        } else {
-            // Harian default
-            $query->whereDate('tanggal', $tanggalInput);
-        }
-    } catch (\Exception $e) {
-        // Jika parsing gagal, abaikan filter
+    if ($tab === 'murid') {
+        $query->whereHas('user', fn($q) => $q->where('role', 'murid'));
+    } elseif ($tab === 'guru') {
+        $query->whereHas('user', fn($q) => $q->where('role', 'guru'));
     }
+
+    // Filter tanggal
+    if ($request->filled('tanggal')) {
+        $tanggalInput = $request->tanggal;
+        $periode = $request->periode ?? 'harian';
+
+        try {
+            if ($periode === 'mingguan') {
+                [$year, $week] = explode('-W', $tanggalInput);
+                $start = \Carbon\Carbon::now()->setISODate($year, $week)->startOfWeek();
+                $end   = \Carbon\Carbon::now()->setISODate($year, $week)->endOfWeek();
+                $query->whereBetween('tanggal', [$start, $end]);
+            } elseif ($periode === 'bulanan') {
+                $date = \Carbon\Carbon::parse($tanggalInput . '-01');
+                $query->whereYear('tanggal', $date->year)
+                      ->whereMonth('tanggal', $date->month);
+            } else {
+                $query->whereDate('tanggal', $tanggalInput);
+            }
+        } catch (\Exception $e) {
+            // Abaikan jika parsing gagal
+        }
+    }
+
+    // Filter lokasi
+    if ($request->filled('lokasi')) {
+        $query->where('lokasi', $request->lokasi);
+    }
+
+    // Filter tipe (khusus perpustakaan)
+    if ($request->lokasi === 'perpustakaan' && $request->filled('tipe')) {
+        $query->where('tipe', $request->tipe);
+    }
+
+    // Filter status
+    if ($request->filled('status')) {
+        if ($request->status === 'Terverifikasi') {
+            $query->whereNotNull('verifikasi_petugas');
+        } elseif ($request->status === 'Menunggu') {
+            $query->whereNull('verifikasi_petugas');
+        }
+    }
+
+    $kunjungan = $query->latest()->get();
+
+    $pdf = Pdf::loadView('admin.kunjungan.cetak', [
+        'kunjungan' => $kunjungan,
+        'tab'       => $tab,
+        'lokasi'    => $lokasi,
+        'tipe'      => $tipe // dikirim ke blade
+    ])->setPaper('A4', 'portrait');
+
+    return $pdf->stream('laporan_kunjungan_' . $tab . '.pdf');
 }
 
-
-
-        if ($request->filled('lokasi')) {
-            $query->where('lokasi', $request->lokasi);
-        }
-
-        if ($request->filled('status')) {
-            if ($request->status === 'Terverifikasi') {
-                $query->whereNotNull('verifikasi_petugas');
-            } elseif ($request->status === 'Menunggu') {
-                $query->whereNull('verifikasi_petugas');
-            }
-        }
-
-        // Dapatkan hasil kunjungan
-        $kunjungan = $query->latest()->get();
-
-        // Kirim variabel tambahan ke blade
-        $pdf = Pdf::loadView('admin.kunjungan.cetak', [
-            'kunjungan' => $kunjungan,
-            'tab' => $tab,
-            'lokasi' => $lokasi, // ← dikirim ke Blade untuk switch kolom
-        ])->setPaper('A4', 'portrait');
-
-        return $pdf->stream('laporan_kunjungan_' . $tab . '.pdf');
-    }
 }
