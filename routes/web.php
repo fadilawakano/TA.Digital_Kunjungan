@@ -43,7 +43,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // ===================== MIDDLEWARE PROTECTED ROUTES =====================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'prevent-back-history'])->group(function () {
 
     // ---------- PROFIL ----------
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
