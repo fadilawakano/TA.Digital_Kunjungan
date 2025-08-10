@@ -61,7 +61,7 @@
                     <td>{{ $item->alat ?? '-' }}</td>
                     <td>{{ $item->jumlah_alat ?? '-' }}</td>
                     <td>{{ $item->judul_materi ?? '-' }}</td>
-                    <td>{{ $item->keterangan ?? '-' }}</td>
+                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                 </tr>
             @empty
                 <tr>

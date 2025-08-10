@@ -57,7 +57,7 @@
                     <td>{{ \Carbon\Carbon::parse($item->tanggal_pengembalian)->format('d-m-Y') }}</td>
                     <td>{{ $item->judul_buku ?? '-' }}</td>
                     <td>{{ $item->jumlah_buku ?? '-' }}</td>
-                    <td>{{ $item->keterangan ?? '-' }}</td>
+                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                 </tr>
             @empty
                 <tr>

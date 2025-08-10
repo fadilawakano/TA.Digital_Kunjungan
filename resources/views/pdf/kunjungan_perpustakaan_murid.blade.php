@@ -67,7 +67,7 @@
                             -
                         @endif
                     </td>
-                    <td>{{ $item->keterangan ?? '-' }}</td>
+                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                 </tr>
             @empty
                 <tr>

@@ -1,7 +1,7 @@
 @extends('layouts.fisika')
 
 @section('content')
-   <a href="{{ route('fisika.dashboard') }}" 
+    <a href="{{ route('fisika.dashboard') }}" 
    class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg shadow transition">
     {{-- Ikon Dashboard --}}
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,20 +70,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($kunjunganFisika as $data)
+                    @forelse ($data as $item)
                         <tr class="border-t hover:bg-[#f7e8d3]">
-                            <td class="px-4 py-2">{{ $data->user->name ?? '-' }}</td>
-                            <td class="px-4 py-2">{{ $data->kelas }}</td>
-                            <td class="px-4 py-2">{{ \Carbon\Carbon::parse($data->tanggal)->format('d-m-Y') }}</td>
-                            <td class="px-4 py-2">{{ $data->mata_pelajaran }}</td>
-                            <td class="px-4 py-2">{{ $data->judul_materi }}</td>
+                            <td class="px-4 py-2">{{ $item->user->name ?? '-' }}</td>
+                            <td class="px-4 py-2">{{ $item->kelas }}</td>
+                            <td class="px-4 py-2">{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
+                            <td class="px-4 py-2">{{ $item->mata_pelajaran }}</td>
+                            <td class="px-4 py-2">{{ $item->judul_materi }}</td>
                             <td class="px-4 py-2">
-                                @if ($data->status_verifikasi === 'terverifikasi')
+                                @if ($item->status_verifikasi === 'terverifikasi')
                                     <span class="text-green-600 font-semibold">Terverifikasi</span><br>
-                                    <small class="text-gray-500">oleh {{ $data->verifikasi_petugas }}</small>
+                                    <small class="text-gray-500">oleh {{ $item->verifikasi_petugas }}</small>
                                 @else
                                     <div class="flex gap-2 flex-wrap">
-                                        <form action="{{ route('fisika.verifikasi', $data->id) }}" method="POST">
+                                        <form action="{{ route('fisika.verifikasi', $item->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="berhasil">
                                             <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
@@ -91,7 +91,7 @@
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('fisika.verifikasi', $data->id) }}" method="POST">
+                                        <form action="{{ route('fisika.verifikasi', $item->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="status" value="kerusakan">
                                             <button type="submit" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
@@ -102,7 +102,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2">
-                                <form action="{{ route('fisika.kunjungan.destroy', $data->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                <form action="{{ route('fisika.kunjungan.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
@@ -118,6 +118,48 @@
                     @endforelse
                 </tbody>
             </table>
+            @if ($data->hasPages())
+    <div class="mt-6 flex flex-wrap justify-center gap-2 text-sm">
+        {{-- Previous Page Link --}}
+        @if ($data->onFirstPage())
+            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed">←</span>
+        @else
+            <a href="{{ $data->previousPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">←</a>
+        @endif
+
+        {{-- Pagination Elements --}}
+        @foreach ($data->getUrlRange(1, $data->lastPage()) as $page => $url)
+            @if ($page == $data->currentPage())
+                <span class="px-3 py-1 bg-[#7EACB5] text-white rounded font-semibold">{{ $page }}</span>
+            @else
+                <a href="{{ $url }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">{{ $page }}</a>
+            @endif
+        @endforeach
+
+        {{-- Next Page Link --}}
+        @if ($data->hasMorePages())
+            <a href="{{ $data->nextPageUrl() }}" class="px-3 py-1 bg-[#C7C8CC] text-black rounded hover:bg-[#b0b0b0]">→</a>
+        @else
+            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed">→</span>
+        @endif
+    </div>
+@endif
+
+
+<style>
+    /* Pastikan tombol pagination tidak hilang */
+    .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .pagination nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+</style>
         </div>
     </div>
 </div>

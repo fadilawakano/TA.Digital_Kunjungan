@@ -57,7 +57,7 @@
                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $item->mata_pelajaran ?? '-' }}</td>
                     <td>{{ $item->judul_materi ?? '-' }}</td>
-                    <td>{{ $item->keterangan ?? '-' }}</td>
+                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
                 </tr>
             @empty
                 <tr>

@@ -18,35 +18,30 @@ class FisikaController extends Controller
         $this->middleware(['auth', 'role:fisika']);
     }
 
-
     public function murid()
     {
-        $kunjunganFisika = Kunjungan::where('role_tujuan', 'fisika')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'murid');
-            })
+        $data = Kunjungan::where('role_tujuan', 'fisika')
+            ->whereHas('user', fn($q) => $q->where('role', 'murid'))
             ->latest()
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
-        return view('fisika.murid', compact('kunjunganFisika'));
+        return view('fisika.murid', compact('data'));
     }
 
     public function guru()
     {
-        $kunjunganGuru = Kunjungan::where('role_tujuan', 'fisika')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'guru');
-            })
+        $data = Kunjungan::where('role_tujuan', 'fisika')
+            ->whereHas('user', fn($q) => $q->where('role', 'guru'))
             ->latest()
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
-        return view('fisika.guru', compact('kunjunganGuru'));
+        return view('fisika.guru', compact('data'));
     }
 
     public function filter(Request $request, $asal)
     {
-        $jenisFilter = $request->input('filter_jenis', 'harian');
-
         $query = Kunjungan::with('user')
             ->where('role_tujuan', 'fisika');
 
@@ -56,83 +51,73 @@ class FisikaController extends Controller
             $query->whereHas('user', fn($q) => $q->where('role', 'guru'));
         }
 
-
         $this->applyDateFilter($query, $request);
 
-        $data = $query->latest()->get();
+        $data = $query->latest()->paginate(5)->withQueryString();
 
-        if ($asal === 'murid') {
-            return view('fisika.murid', ['kunjunganFisika' => $data]);
-        } elseif ($asal === 'guru') {
-            return view('fisika.guru', ['kunjunganGuru' => $data]);
-        } else {
-            $murid = $data->where('user.role', 'murid');
-            $guru = $data->where('user.role', 'guru');
+        if (in_array($asal, ['murid', 'guru'])) {
+            return view("fisika.$asal", compact('data'));
+        }
 
-            return view('fisika.dashboard', [
-                'kunjunganMurid' => $murid,
-                'kunjunganGuru' => $guru,
+        $murid = $data->where('user.role', 'murid');
+        $guru = $data->where('user.role', 'guru');
+
+        return view('fisika.dashboard', compact('murid', 'guru'));
+    }
+
+    private function applyDateFilter($query, $request)
+    {
+        $filterJenis = $request->filter_jenis;
+
+        if ($filterJenis === 'harian' && $request->tanggal) {
+            $query->whereDate('tanggal', $request->tanggal);
+        } elseif ($filterJenis === 'mingguan' && $request->minggu) {
+            [$year, $week] = explode('-W', $request->minggu);
+            $query->whereBetween('tanggal', [
+                Carbon::now()->setISODate($year, $week)->startOfWeek(),
+                Carbon::now()->setISODate($year, $week)->endOfWeek(),
             ]);
+        } elseif ($filterJenis === 'bulanan' && $request->bulan) {
+            $query->whereYear('tanggal', substr($request->bulan, 0, 4))
+                ->whereMonth('tanggal', substr($request->bulan, 5, 2));
         }
     }
 
-            private function applyDateFilter($query, $request)
-        {
-            $filterJenis = $request->filter_jenis;
-
-            if ($filterJenis === 'harian' && $request->tanggal) {
-                $query->whereDate('tanggal', $request->tanggal);
-            } elseif ($filterJenis === 'mingguan' && $request->minggu) {
-                [$year, $week] = explode('-W', $request->minggu);
-                $query->whereBetween('tanggal', [
-                    Carbon::now()->setISODate($year, $week)->startOfWeek(),
-                    Carbon::now()->setISODate($year, $week)->endOfWeek(),
-                ]);
-            } elseif ($filterJenis === 'bulanan' && $request->bulan) {
-                $query->whereYear('tanggal', substr($request->bulan, 0, 4))
-                    ->whereMonth('tanggal', substr($request->bulan, 5, 2));
-            }
-        }
-
-
-
-      public function verifikasi(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:berhasil,kerusakan',
-    ]);
-
-    $data = Kunjungan::findOrFail($id);
-    $petugas = Auth::user();
-
-    $data->status_verifikasi = $request->status;
-    $data->verifikasi_petugas = $petugas->name;
-    $data->save();
-
-    $nama = trim($data->nama);
-    $kelas = trim($data->kelas ?? '-');
-    $kategori = $data->lokasi ?? 'fisika';
-
-    if ($request->status === 'kerusakan') {
-        Kerusakan::create([
-            'nama' => $nama,
-            'kelas' => $kelas,
-            'kategori' => $kategori,
-            'deskripsi' => 'Kerusakan saat kunjungan lab fisika.',
-            'status' => 'belum dikonfirmasi',
+    public function verifikasi(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:berhasil,kerusakan',
         ]);
-    } elseif ($request->status === 'berhasil') {
-        Kerusakan::whereRaw('LOWER(nama) = ?', [strtolower($nama)])
-            ->whereRaw('TRIM(kelas) = ?', [$kelas])
-            ->whereRaw('LOWER(kategori) = ?', [strtolower($kategori)])
-            ->where('status', 'belum dikonfirmasi')
-            ->update(['status' => 'selesai']);
+
+        $data = Kunjungan::findOrFail($id);
+        $petugas = Auth::user();
+
+        $data->status_verifikasi = $request->status;
+        $data->verifikasi_petugas = $petugas->name;
+        $data->save();
+
+        $nama = trim($data->nama);
+        $kelas = trim($data->kelas ?? '-');
+        $kategori = $data->lokasi ?? 'fisika';
+
+        if ($request->status === 'kerusakan') {
+            Kerusakan::create([
+                'nama' => $nama,
+                'kelas' => $kelas,
+                'kategori' => $kategori,
+                'deskripsi' => 'Kerusakan saat kunjungan lab fisika.',
+                'status' => 'belum dikonfirmasi',
+            ]);
+        } elseif ($request->status === 'berhasil') {
+            Kerusakan::whereRaw('LOWER(nama) = ?', [strtolower($nama)])
+                ->whereRaw('TRIM(kelas) = ?', [$kelas])
+                ->whereRaw('LOWER(kategori) = ?', [strtolower($kategori)])
+                ->where('status', 'belum dikonfirmasi')
+                ->update(['status' => 'selesai']);
+        }
+
+        return back()->with('success', 'Data berhasil diverifikasi.');
     }
-
-    return back()->with('success', 'Data berhasil diverifikasi.');
-}
-
-
 
     public function destroy($id)
     {
@@ -142,55 +127,29 @@ class FisikaController extends Controller
         return back()->with('success', 'Data kunjungan berhasil dihapus.');
     }
 
-    
-        public function cetakMurid(Request $request)
-{
-    $query = Kunjungan::where('role_tujuan', 'fisika')
-        ->whereHas('user', fn($q) => $q->where('role', 'murid'));
+    public function cetakMurid(Request $request)
+    {
+        $query = Kunjungan::where('role_tujuan', 'fisika')
+            ->whereHas('user', fn($q) => $q->where('role', 'murid'));
 
-    $filterJenis = $request->filter_jenis;
+        $this->applyDateFilter($query, $request);
 
-    if ($filterJenis === 'harian' && $request->tanggal) {
-        $query->whereDate('tanggal', $request->tanggal);
-    } elseif ($filterJenis === 'mingguan' && $request->minggu) {
-        [$year, $week] = explode('-W', $request->minggu);
-        $query->whereBetween('tanggal', [
-            Carbon::now()->setISODate($year, $week)->startOfWeek(),
-            Carbon::now()->setISODate($year, $week)->endOfWeek(),
-        ]);
-    } elseif ($filterJenis === 'bulanan' && $request->bulan) {
-        $query->whereYear('tanggal', substr($request->bulan, 0, 4))
-              ->whereMonth('tanggal', substr($request->bulan, 5, 2));
+        $murid = $query->get();
+
+        return PDF::loadView('pdf.kunjungan_fisika_murid', compact('murid'))
+            ->stream('kunjungan_murid.pdf');
     }
 
-    $murid = $query->get();
+    public function cetakGuru(Request $request)
+    {
+        $query = Kunjungan::where('role_tujuan', 'fisika')
+            ->whereHas('user', fn($q) => $q->where('role', 'guru'));
 
-    return PDF::loadView('pdf.kunjungan_fisika_murid', compact('murid'))->stream('kunjungan_murid.pdf');
-}
+        $this->applyDateFilter($query, $request);
 
-public function cetakGuru(Request $request)
-{
-    $query = Kunjungan::where('role_tujuan', 'fisika')
-        ->whereHas('user', fn($q) => $q->where('role', 'guru'));
+        $guru = $query->get();
 
-    $filterJenis = $request->filter_jenis;
-
-    if ($filterJenis === 'harian' && $request->tanggal) {
-        $query->whereDate('tanggal', $request->tanggal);
-    } elseif ($filterJenis === 'mingguan' && $request->minggu) {
-        [$year, $week] = explode('-W', $request->minggu);
-        $query->whereBetween('tanggal', [
-            Carbon::now()->setISODate($year, $week)->startOfWeek(),
-            Carbon::now()->setISODate($year, $week)->endOfWeek(),
-        ]);
-    } elseif ($filterJenis === 'bulanan' && $request->bulan) {
-        $query->whereYear('tanggal', substr($request->bulan, 0, 4))
-              ->whereMonth('tanggal', substr($request->bulan, 5, 2));
+        return PDF::loadView('pdf.kunjungan_fisika_guru', compact('guru'))
+            ->stream('kunjungan_guru.pdf');
     }
-
-    $guru = $query->get();
-
-    return PDF::loadView('pdf.kunjungan_fisika_guru', compact('guru'))->stream('kunjungan_guru.pdf');
-}
-
 }
