@@ -17,6 +17,9 @@ class Logout
         Session::invalidate();
         Session::regenerateToken();
 
-        return redirect('/');
+        // Hapus URL tujuan terakhir (biar nggak diarahkan ke halaman user sebelumnya)
+        Session::forget('url.intended');
+
+        return redirect('/login'); // langsung ke login biar jelas
     }
 }

@@ -31,23 +31,24 @@ class AuthenticatedSessionController extends Controller
     $user = Auth::user();
 
     switch ($user->role) {
-        case 'admin':
-            return redirect()->intended('/admin/dashboard');
-        case 'murid':
-            return redirect()->intended('/murid/dashboard');
-        case 'guru':
-            return redirect()->intended('/guru/dashboard');
-        case 'perpustakaan':
-            return redirect()->intended('/perpustakaan/dashboard');
-        case 'biologi':
-            return redirect()->intended('/biologi/dashboard');
-        case 'fisika':
-            return redirect()->intended('/fisika/dashboard');
-        case 'kimia':
-            return redirect()->intended('/kimia/dashboard');
-        default:
-            return redirect()->intended('/dashboard');
-    }    
+    case 'admin':
+        return redirect('/admin/dashboard');
+    case 'murid':
+        return redirect('/murid/dashboard');
+    case 'guru':
+        return redirect('/guru/dashboard');
+    case 'perpustakaan':
+        return redirect('/perpustakaan/dashboard');
+    case 'biologi':
+        return redirect('/biologi/dashboard');
+    case 'fisika':
+        return redirect('/fisika/dashboard');
+    case 'kimia':
+        return redirect('/kimia/dashboard');
+    default:
+        return redirect('/dashboard');
+}
+ 
 }
 
  

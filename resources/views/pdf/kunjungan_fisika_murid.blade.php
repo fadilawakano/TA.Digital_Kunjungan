@@ -57,7 +57,15 @@
                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y') }}</td>
                     <td>{{ $item->mata_pelajaran ?? '-' }}</td>
                     <td>{{ $item->judul_materi ?? '-' }}</td>
-                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
+                    <td>
+                        @if (is_null($item->verifikasi_petugas))
+                            Menunggu
+                        @elseif ($item->status_verifikasi === 'berhasil')
+                            Baik
+                        @elseif ($item->status_verifikasi === 'kerusakan')
+                            Tidak Baik
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>

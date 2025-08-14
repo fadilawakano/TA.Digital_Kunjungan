@@ -57,7 +57,15 @@
                     <td>{{ \Carbon\Carbon::parse($item->tanggal_pengembalian)->format('d-m-Y') }}</td>
                     <td>{{ $item->judul_buku ?? '-' }}</td>
                     <td>{{ $item->jumlah_buku ?? '-' }}</td>
-                    <td>{{ $item->verifikasi_petugas ? 'Terverifikasi' : 'Menunggu' }}</td>
+                    <td>
+                        @if (is_null($item->verifikasi_petugas))
+                            Menunggu
+                        @elseif ($item->status_verifikasi === 'berhasil')
+                            Baik
+                        @elseif ($item->status_verifikasi === 'kerusakan')
+                            Tidak Baik
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
