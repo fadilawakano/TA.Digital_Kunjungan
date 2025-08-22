@@ -28,15 +28,19 @@ Route::get('/', function () {
 
 require __DIR__ . '/auth.php';
 
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'checkUsername'])->name('password.check');
-Route::get('/reset-password/{username}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
-Route::post('/reset-password/{username}', [ForgotPasswordController::class, 'updatePassword'])->name('password.update');
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotForm'])
+        ->name('password.request');
 
-// routes/web.php
-Route::get('/reset-password/{username}', [NewPasswordController::class, 'create'])->name('password.reset');
-Route::post('/reset-password/{username}', [NewPasswordController::class, 'update'])->name('password.update');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'checkUsername'])
+        ->name('password.check');
 
+    Route::get('/reset-password/{username}', [ForgotPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    Route::post('/reset-password/{username}', [ForgotPasswordController::class, 'updatePassword'])
+        ->name('password.update');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
